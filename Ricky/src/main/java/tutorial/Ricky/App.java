@@ -33,7 +33,9 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import net.dv8tion.jda.core.managers.GuildController;
 
 
-
+/**
+ * CHARGING EMP
+ */
 public class App extends ListenerAdapter {
 	
 	public static final char command_symbol = '$';
