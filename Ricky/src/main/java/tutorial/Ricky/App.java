@@ -74,7 +74,7 @@ public class App extends ListenerAdapter {
         final JDA rickyBot = new JDABuilder(AccountType.BOT).setToken("Mzg3Nzk4NTc4OTc1ODY2ODk1.DQj7iw.wb5283aO3asfDjNej3a5OVcs5Ys").buildBlocking();
         rickyBot.addEventListener(new App());
         
-        bot.user.setGame('in the Kitchen');	//displays a game for Ricky
+        //bot.user.setGame("in the Kitchen");	//displays a game for Ricky
         
         
         Timer timer = new Timer ();
@@ -257,7 +257,7 @@ public class App extends ListenerAdapter {
 				objChannel.sendMessage(objUser.getAsMention() + " Role Games has been removed!").queue();
 			} 
 			else {
-				gc.addRolesToMember(m, Games).queue();
+				gc.addRolesToMember(m, games).queue();
 				objChannel.sendMessage(objUser.getAsMention() + " Role Games has been added!").queue();			
 			}
 		}
@@ -268,7 +268,7 @@ public class App extends ListenerAdapter {
 			Member m = objGuild.getMember(objUser);
 			GuildController gc = new GuildController(objGuild);
 			if(m.getRoles().contains(media)) {
-				gc.removeRolesFromMember(m, Games).queue();
+				gc.removeRolesFromMember(m, media).queue();
 				objChannel.sendMessage(objUser.getAsMention() + " Role Media has been removed!").queue();
 			} 
 			else {
