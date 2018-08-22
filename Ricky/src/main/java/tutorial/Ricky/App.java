@@ -17,9 +17,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javax.security.auth.login.LoginException;
-
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
@@ -73,6 +71,9 @@ public class App extends ListenerAdapter {
     	
         final JDA rickyBot = new JDABuilder(AccountType.BOT).setToken("Mzg3Nzk4NTc4OTc1ODY2ODk1.DQj7iw.wb5283aO3asfDjNej3a5OVcs5Ys").buildBlocking();
         rickyBot.addEventListener(new App());
+        
+        bot.user.setGame('in the Kitchen');	//displays a game for Ricky
+        
         
         Timer timer = new Timer ();
         TimerTask hourlyTask = new TimerTask () {
@@ -244,36 +245,35 @@ public class App extends ListenerAdapter {
 			}
 		}
 		
-		else if(strArgs[0].equals("Siege") && objChannel.getName().equalsIgnoreCase("help")) { // Siege role
+		else if(strArgs[0].equals("Games") && objChannel.getName().equalsIgnoreCase("help")) { // Games role
 			
-			Role siege = objGuild.getRolesByName("Siege", true).get(0);
+			Role games = objGuild.getRolesByName("Games", true).get(0);
 			Member m = objGuild.getMember(objUser);
 			GuildController gc = new GuildController(objGuild);
-			if(m.getRoles().contains(siege)) {
-				gc.removeRolesFromMember(m, siege).queue();
-				objChannel.sendMessage(objUser.getAsMention() + " Role Siege has been removed!").queue();
+			if(m.getRoles().contains(games)) {
+				gc.removeRolesFromMember(m, games).queue();
+				objChannel.sendMessage(objUser.getAsMention() + " Role Games has been removed!").queue();
 			} 
 			else {
-				gc.addRolesToMember(m, siege).queue();
-				objChannel.sendMessage(objUser.getAsMention() + " Role Siege has been added!").queue();			
+				gc.addRolesToMember(m, Games).queue();
+				objChannel.sendMessage(objUser.getAsMention() + " Role Games has been added!").queue();			
 			}
 		}
-		
-		else if(strArgs[0].equals("Rust") && objChannel.getName().equalsIgnoreCase("help")) { // Rust role
+
+		else if(strArgs[0].equals("Media") && objChannel.getName().equalsIgnoreCase("help")) { // Media role
 			
-			Role rust = objGuild.getRolesByName("Rust", true).get(0);
+			Role media = objGuild.getRolesByName("Media", true).get(0);
 			Member m = objGuild.getMember(objUser);
 			GuildController gc = new GuildController(objGuild);
-			if(m.getRoles().contains(rust)) {
-				gc.removeRolesFromMember(m, rust).queue();
-				objChannel.sendMessage(objUser.getAsMention() + " Role Rust has been removed!").queue();
+			if(m.getRoles().contains(media)) {
+				gc.removeRolesFromMember(m, Games).queue();
+				objChannel.sendMessage(objUser.getAsMention() + " Role Media has been removed!").queue();
 			} 
 			else {
-				gc.addRolesToMember(m, rust).queue();
-				objChannel.sendMessage(objUser.getAsMention() + " Role Rust has been added!").queue();			
+				gc.addRolesToMember(m, media).queue();
+				objChannel.sendMessage(objUser.getAsMention() + " Role Media has been added!").queue();			
 			}
 		}
-		
 		
 	}
     
