@@ -10,6 +10,7 @@ local.properties
 .loadpath
 .recommenders
 Ricky/.classpath
+*.class
 
 # External tool builders
 .externalToolBuilders/
