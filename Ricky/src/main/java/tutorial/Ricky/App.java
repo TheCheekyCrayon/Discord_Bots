@@ -177,8 +177,8 @@ public class App extends ListenerAdapter {
 			objChannel.sendMessage("$DJ    (for the DJ role, @DJ )");
 			objChannel.sendMessage("$NSFW    (for the NSFW role, @NSFW )");
 			objChannel.sendMessage("$Meme-ber    (for the Meme-ber role, @Meme-ber )");
-			objChannel.sendMessage("$Siege   (for the Siege role, @Siege )");
-			objChannel.sendMessage("$Rust    (for the Rust role, @Rust )");
+			objChannel.sendMessage("$Media   (for the Media role, @Media )");
+			objChannel.sendMessage("$Games    (for the Games role, @Games )");
 			objChannel.sendMessage("$Member    (to get Member status in the server, @Member )");
 			objChannel.sendMessage(" ");
 			objChannel.sendMessage("In any channel $subscibe will generate a link that allows you to subscribe to the Cookingwith Rick YouTube channel");
