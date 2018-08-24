@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -12,6 +13,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.regex.Matcher;
@@ -45,34 +47,30 @@ public class App extends ListenerAdapter {
     private static final String Blizzard_URL = "https://www.youtube.com/feeds/videos.xml?channel_id=UC3GriadTkHBnfgd2UFETGOA";	//done
     private static final String Battlefield_URL = "https://www.youtube.com/feeds/videos.xml?channel_id=UCvNBXWGykQrWb7kPAn5eLUQ";	//done
     private static final String CoD_URL = "https://www.youtube.com/feeds/videos.xml?channel_id=UC9YydG57epLqxA9cTzZXSeQ";	//done
-    private static final String EaStarWars_URL = "https://ww.youtube.com/feeds/videos.xml?channel_id=UCOsVSkmXD1tc6uiJ2hc0wYQ";	//done
-    private static List<String> seen;
-    
-    
+    private static final String EaStarWars_URL = "https://www.youtube.com/feeds/videos.xml?channel_id=UCOsVSkmXD1tc6uiJ2hc0wYQ";	//done
+    private static List<String> seen;    
 	
 	@SuppressWarnings("deprecation")
 	public static void main( String[] args ) throws LoginException, IllegalArgumentException, InterruptedException, RateLimitedException, IOException, ClassNotFoundException {
 	    
+		Properties bot_conf = loadConfig(args[0]);
     	
-   	 //Load seen videos from disk
-       try {
-           ObjectInputStream ois = new ObjectInputStream(new FileInputStream("seen.obj"));
-           App.seen = (List<String>) ois.readObject();
-           ois.close();
-       } catch(FileNotFoundException e) {
-           //if the file doesn't exist just create a new ArrayList
-           App.seen = new ArrayList<String>();
-       }
-		
-		
+   	 	//Load seen videos from disk
+		try {
+			ObjectInputStream ois = new ObjectInputStream(new FileInputStream("seen.obj"));
+			App.seen = (List<String>) ois.readObject();
+			ois.close();
+		} catch(FileNotFoundException e) {
+			//if the file doesn't exist just create a new ArrayList
+			App.seen = new ArrayList<String>();
+		}		
 
-		final JDA GameBot = new JDABuilder(AccountType.BOT).setToken("NDgxNjE3MTc3MDExNTUyMjU2.Dl8S4g.4rvjYwbW3d5YjXWUhHHlwmQIerU").buildBlocking();
-		GameBot.addEventListener(new App());
-	    
+		final JDA GameBot = new JDABuilder(AccountType.BOT).setToken(bot_conf.getProperty("gamebot")).buildBlocking();
+		GameBot.addEventListener(new App());	    
 
         Timer timer = new Timer ();
 
-	// Xbox TASK
+        // Xbox TASK
         TimerTask xboxTask = new TimerTask () {
             @Override
             public void run () {
@@ -93,6 +91,7 @@ public class App extends ListenerAdapter {
 				}
             }
         };
+        
         //playstation task
         TimerTask playstationTask = new TimerTask () {
             @Override
@@ -115,7 +114,7 @@ public class App extends ListenerAdapter {
             }
         };
         
-	//Bethesda Task
+        //Bethesda Task
         TimerTask bethesdaTask = new TimerTask () {
             @Override
             public void run () {
@@ -158,6 +157,7 @@ public class App extends ListenerAdapter {
 				}
             }
         };
+        
     	//CoD Task
         TimerTask codTask = new TimerTask () {
             @Override
@@ -268,7 +268,7 @@ public class App extends ListenerAdapter {
             }
         };
 
-        // schedule the task to run starting now and then every hour... Xbox
+        //Schedule the task to run starting now and then every hour... Xbox
         timer.schedule (xboxTask, 0l, 1000*60*30);
         //Playstation Task
         timer.schedule (playstationTask, 0l, 1000*60*30);     
@@ -285,10 +285,9 @@ public class App extends ListenerAdapter {
         //EAStarWars schedule
         timer.schedule (eaTask, 0l, 1000*60*30);
         //Minecraft schedule
-        timer.schedule (minecraftTask, 0l, 1000*60*30);
-		
+        timer.schedule (minecraftTask, 0l, 1000*60*30);		
         
-        }
+    }
 	
     public static void readRSSFeed(String urlAddress, TextChannel chan){
         Pattern r = Pattern.compile("href=\"(.+)\"");
@@ -317,7 +316,7 @@ public class App extends ListenerAdapter {
         } catch (MalformedURLException ue){
             System.out.println("Malformed URL");
         } catch (IOException ioe){
-            System.out.println("Something went wrong reading the contents");
+            System.out.println(chan + ": Something went wrong reading the contents");
         }
     }
 	
@@ -338,26 +337,45 @@ public class App extends ListenerAdapter {
     }
 
 	private void handleCommand(String message, MessageChannel objChannel, User objUser, Guild objGuild) {
-		String[] strArgs = message.substring(1).split(" ");
+		String[] strArgs = message.substring(1).split(" ");		
 		
-		
-		 if(strArgs[0].equals("help")) {	//tells the user how it is when they ask for help
+		if(strArgs[0].equals("help")) {	//tells the user how it is when they ask for help
 			objChannel.sendMessage("Get Good! " + objUser.getAsMention()).queue();
-		 }
-		 
-			else if(strArgs[0].equals("Games") && objChannel.getName().equalsIgnoreCase("help")) { // Games role
+		} else if(strArgs[0].equals("Games") && objChannel.getName().equalsIgnoreCase("help")) { // Games role
 				
-				Role games = objGuild.getRolesByName("Games", true).get(0);
-				Member m = objGuild.getMember(objUser);
-				GuildController gc = new GuildController(objGuild);
-				if(m.getRoles().contains(games)) {		// checks for the role on the user already (same for all role code)
-					gc.removeRolesFromMember(m, games).queue();
-					objChannel.sendMessage(objUser.getAsMention() + " Role Games has been removed!").queue();
-				} 
-				else {
-					gc.addRolesToMember(m, games).queue();
-					objChannel.sendMessage(objUser.getAsMention() + " Role Games has been added!").queue();			
+			Role games = objGuild.getRolesByName("Games", true).get(0);
+			Member m = objGuild.getMember(objUser);
+			GuildController gc = new GuildController(objGuild);
+			if(m.getRoles().contains(games)) {		// checks for the role on the user already (same for all role code)
+				gc.removeRolesFromMember(m, games).queue();
+				objChannel.sendMessage(objUser.getAsMention() + " Role Games has been removed!").queue();
+			} else {
+				gc.addRolesToMember(m, games).queue();
+				objChannel.sendMessage(objUser.getAsMention() + " Role Games has been added!").queue();			
+			}
+		}
+	}
+	
+	private static Properties loadConfig(String path) {
+		Properties prop = new Properties();
+		InputStream input = null;
+		
+		try {
+			input = new FileInputStream(path);
+			prop.load(input);			
+			return prop;
+
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		} finally {
+			if (input != null) {
+				try {
+					input.close();
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
 			}
+		}
+		return null;
 	}
 }
