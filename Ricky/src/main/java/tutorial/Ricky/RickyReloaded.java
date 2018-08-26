@@ -38,14 +38,22 @@ import net.dv8tion.jda.core.managers.GuildController;
 
 public class RickyReloaded extends ListenerAdapter {
 	
+	/**
+	 * Wes = 321798967669030912L
+	 * Jared =
+	 */
+	private static final long WES_SNOWFLAKE = 321798967669030912L;
+	private static final long[] advanced_commands_auth = {WES_SNOWFLAKE};
 	public static final char command_symbol = '$';
 	public static String[] quotes;
     private static final String FEED_URL = "https://www.youtube.com/feeds/videos.xml?channel_id=UCkOlmd_lMI9YHRcN1ffKbyQ";
     private static List<String> seen;
     private static Random rand;
+    private static String quotes_path;
 
 	public static void main(String[] args) throws IOException, ClassNotFoundException, LoginException, IllegalArgumentException, InterruptedException, RateLimitedException {
 		Properties bot_conf = loadConfig(args[0]);
+		RickyReloaded.quotes_path = bot_conf.getProperty("quotes");
 		RickyReloaded.rand = new Random();
     	
    	 	//Load seen videos from disk
@@ -58,21 +66,13 @@ public class RickyReloaded extends ListenerAdapter {
        		RickyReloaded.seen = new ArrayList<String>();
        	}
        
-       	FileInputStream fs = null;
-   		fs = new FileInputStream(bot_conf.getProperty("quotes"));
-   		BufferedReader br = new BufferedReader(new InputStreamReader(fs));
-   		ArrayList<String> array = new ArrayList<String>();
-   		String line;
-   		while((line = br.readLine()) != null)
-   			array.add(line);
-   		quotes = new String[array.size()];
-   		array.toArray(quotes);
+		load_quotes_from_file();
     	
    		final JDA rickyBot = new JDABuilder(AccountType.BOT).setToken(bot_conf.getProperty("ricky")).buildBlocking();
         rickyBot.addEventListener(new RickyReloaded());
         
         Timer timer = new Timer ();
-        TimerTask hourlyTask = new TimerTask () {
+        TimerTask rickyVideoFeedUpdate = new TimerTask () {
             @Override
             public void run () {
             	TextChannel chan = rickyBot.getTextChannelsByName("cookingwith_rick", true).get(0);
@@ -84,17 +84,15 @@ public class RickyReloaded extends ListenerAdapter {
 					oos.writeObject(RickyReloaded.seen);
 	                oos.close();
 				} catch (FileNotFoundException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
             }
         };
         
-        // schedule the task to run starting now and then every hour...
-        timer.schedule (hourlyTask, 0l, 1000*60*30);
+        // schedule the task to run starting now and then every 30 min...
+        timer.schedule (rickyVideoFeedUpdate, 0l, 1000*60*30);
 	}
 	
     @Override
@@ -106,6 +104,9 @@ public class RickyReloaded extends ListenerAdapter {
     	User objUser = e.getAuthor();
     	Guild objGuild = e.getGuild();
     	JDA ricardo = e.getJDA();
+    	
+    	//Use this to find out user unique ID
+    	//System.out.println(objUser.getName() + ": " +objUser.getIdLong());
     	
     	if(message.charAt(0) == command_symbol) {
     		handleCommand(message, objChannel, objUser, objGuild, ricardo);
@@ -165,6 +166,31 @@ public class RickyReloaded extends ListenerAdapter {
 			
 		} else if(strArgs[0].equals("Member") && objChannel.getName().equalsIgnoreCase("help")) {
 			setRole("Member", objGuild, objUser, objChannel);
+			
+		} else if(advanced_auth(objUser.getIdLong()) && strArgs[0].equals("list_quotes")) {
+			//This code will combine 10 quotes per message separated by a newline so we don't get rate limited
+			String msg = "Listing " + RickyReloaded.quotes.length + " quotes:\n";
+			for (int i = 0; i < RickyReloaded.quotes.length; i++) {
+				msg += RickyReloaded.quotes[i] + "\n";
+				if(i%10 == 0) {
+					objChannel.sendMessage(msg).queue();
+					msg = "";
+				} else if(i+1 == RickyReloaded.quotes.length) {
+					objChannel.sendMessage(msg).queue();
+				}
+			}
+			
+		} else if(objUser.getIdLong() == WES_SNOWFLAKE && strArgs[0].equals("reload_quotes")) {
+			//This command is limited to just Wes since no one else has access to the quotes file anyway
+			//Also it causes disk activity on server
+			try {
+				objChannel.sendMessage("Attempting to reload quotes from " + RickyReloaded.quotes_path).queue();
+				load_quotes_from_file();
+				objChannel.sendMessage("Succesfully loaded " + RickyReloaded.quotes.length + " quotes.").queue();
+			} catch (IOException e) {
+				e.printStackTrace();
+				objChannel.sendMessage("Ah shit, something's fucked...").queue();
+			}
 		}
 	}
 	
@@ -211,6 +237,18 @@ public class RickyReloaded extends ListenerAdapter {
 		return null;
 	}
 	
+	private static void load_quotes_from_file() throws IOException {
+       	FileInputStream fs = null;
+   		fs = new FileInputStream(RickyReloaded.quotes_path);
+   		BufferedReader br = new BufferedReader(new InputStreamReader(fs));
+   		ArrayList<String> array = new ArrayList<String>();
+   		String line;
+   		while((line = br.readLine()) != null)
+   			array.add(line);
+   		quotes = new String[array.size()];
+   		array.toArray(RickyReloaded.quotes);
+	}
+	
     public static void readRSSFeed(String urlAddress, TextChannel chan){
         Pattern r = Pattern.compile("href=\"(.+)\"");
         try{
@@ -240,5 +278,13 @@ public class RickyReloaded extends ListenerAdapter {
         } catch (IOException ioe){
             System.out.println("Something went wrong reading the contents");
         }
+    }
+    
+    private static boolean advanced_auth(long id) {
+    	for(long l : advanced_commands_auth) {
+    		if(l == id)
+    			return true;
+    	}
+    	return false;
     }
 }
