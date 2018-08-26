@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -12,6 +13,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -48,6 +50,7 @@ public class App extends ListenerAdapter {
     @SuppressWarnings("unchecked")
 	public static void main( String[] args ) throws LoginException, IllegalArgumentException, InterruptedException, RateLimitedException, IOException, ClassNotFoundException {
     	
+    	Properties bot_conf = loadConfig(args[0]);
     	App.rand = new Random();
     	
     	 //Load seen videos from disk
@@ -71,7 +74,7 @@ public class App extends ListenerAdapter {
     	array.toArray(quotes);
     		
     	
-        final JDA rickyBot = new JDABuilder(AccountType.BOT).setToken("Mzg3Nzk4NTc4OTc1ODY2ODk1.DQj7iw.wb5283aO3asfDjNej3a5OVcs5Ys").buildBlocking();
+        final JDA rickyBot = new JDABuilder(AccountType.BOT).setToken(bot_conf.getProperty("ricky")).buildBlocking();
         rickyBot.addEventListener(new App());
         
         //bot.user.setGame("in the Kitchen");	//displays a game for Ricky
@@ -278,5 +281,27 @@ public class App extends ListenerAdapter {
 		}
 		
 	}
-    
+	
+	private static Properties loadConfig(String path) {
+		Properties prop = new Properties();
+		InputStream input = null;
+		
+		try {
+			input = new FileInputStream(path);
+			prop.load(input);			
+			return prop;
+
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		} finally {
+			if (input != null) {
+				try {
+					input.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return null;
+	}    
 }

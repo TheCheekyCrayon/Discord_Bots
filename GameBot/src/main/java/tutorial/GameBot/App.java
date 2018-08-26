@@ -48,7 +48,7 @@ public class App extends ListenerAdapter {
     private static final String Battlefield_URL = "https://www.youtube.com/feeds/videos.xml?channel_id=UCvNBXWGykQrWb7kPAn5eLUQ";	//done
     private static final String CoD_URL = "https://www.youtube.com/feeds/videos.xml?channel_id=UC9YydG57epLqxA9cTzZXSeQ";	//done
     private static final String EaStarWars_URL = "https://www.youtube.com/feeds/videos.xml?channel_id=UCOsVSkmXD1tc6uiJ2hc0wYQ";	//done
-    private static List<String> seen;    
+    private static List<String> seen;
 	
 	@SuppressWarnings("deprecation")
 	public static void main( String[] args ) throws LoginException, IllegalArgumentException, InterruptedException, RateLimitedException, IOException, ClassNotFoundException {
