@@ -43,7 +43,8 @@ public class RickyReloaded extends ListenerAdapter {
 	 * Jared =
 	 */
 	private static final long WES_SNOWFLAKE = 321798967669030912L;
-	private static final long[] ADVANCED_COMMANDS_AUTH = {WES_SNOWFLAKE};
+	private static final long JARED_SNOWFLAKE = 270258726236192769L;
+	private static final long[] ADVANCED_COMMANDS_AUTH = {WES_SNOWFLAKE, JARED_SNOWFLAKE};
 	private static final char COMMAND_SYMBOL = '$';
     private static final String FEED_URL = "https://www.youtube.com/feeds/videos.xml?channel_id=UCkOlmd_lMI9YHRcN1ffKbyQ";
     
@@ -52,6 +53,7 @@ public class RickyReloaded extends ListenerAdapter {
     private static Random rand;			
     private static String quotes_path;	//File system path to text file containing quotes to load; this is loaded from the properties file
 
+	@SuppressWarnings("unchecked")
 	public static void main(String[] args) throws IOException, ClassNotFoundException, LoginException, IllegalArgumentException, InterruptedException, RateLimitedException {
 		Properties bot_conf = loadConfig(args[0]);
 		RickyReloaded.quotes_path = bot_conf.getProperty("quotes");
