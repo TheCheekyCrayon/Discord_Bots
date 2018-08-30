@@ -40,7 +40,7 @@ public class RickyReloaded extends ListenerAdapter {
 	
 	/**
 	 * Wes = 321798967669030912L
-	 * Jared =
+	 * Jared = 270258726236192769L
 	 */
 	private static final long WES_SNOWFLAKE = 321798967669030912L;
 	private static final long JARED_SNOWFLAKE = 270258726236192769L;
