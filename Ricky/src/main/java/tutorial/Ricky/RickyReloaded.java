@@ -25,6 +25,7 @@ import javax.security.auth.login.LoginException;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
+import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.MessageChannel;
@@ -38,15 +39,19 @@ import net.dv8tion.jda.core.managers.GuildController;
 
 public class RickyReloaded extends ListenerAdapter {
 	
+<<<<<<< HEAD
 	/**
 	 * Wes = 321798967669030912L
 	 * Jared = 270258726236192769L
 	 */
+=======
+>>>>>>> 5400575aec9cb2fa0fba2dab44086195044456b1
 	private static final long WES_SNOWFLAKE = 321798967669030912L;
 	private static final long JARED_SNOWFLAKE = 270258726236192769L;
 	private static final long[] ADVANCED_COMMANDS_AUTH = {WES_SNOWFLAKE, JARED_SNOWFLAKE};
 	private static final char COMMAND_SYMBOL = '$';
     private static final String FEED_URL = "https://www.youtube.com/feeds/videos.xml?channel_id=UCkOlmd_lMI9YHRcN1ffKbyQ";
+    private static final String SUBSCRIBE_URL = "https://www.youtube.com/channel/UCkOlmd_lMI9YHRcN1ffKbyQ?sub_confirmation=1";
     
     private static String[] quotes;		//Contains currently loaded quotes
     private static List<String> seen;	//Contains list of seen video URLs; videos in this list will not be sent to channel
@@ -75,6 +80,7 @@ public class RickyReloaded extends ListenerAdapter {
 		//Create Discord bot object; this estavlishes connection to discord server etc..
    		final JDA rickyBot = new JDABuilder(AccountType.BOT).setToken(bot_conf.getProperty("ricky")).buildBlocking();
         rickyBot.addEventListener(new RickyReloaded());
+        rickyBot.getPresence().setGame(Game.playing("in the Kitchen"));
         
         //Set up task to check Ricky's yt channel for new videos
         Timer timer = new Timer ();
@@ -207,6 +213,23 @@ public class RickyReloaded extends ListenerAdapter {
 				e.printStackTrace();
 				objChannel.sendMessage("Ah shit, something's fucked...").queue();
 			}
+		} else if(advanced_auth(objUser.getIdLong()) && strArgs[0].equals("set_game")) {
+			int gameTitleIndex = message.indexOf(" ", message.indexOf(" ") + 1);
+			
+	        switch(strArgs[1])
+	        {
+	            case "watching":
+	            	richard.getPresence().setGame(Game.watching(message.substring(gameTitleIndex)));
+	                break;
+	            case "streaming":
+	            	richard.getPresence().setGame(Game.streaming(message.substring(gameTitleIndex), SUBSCRIBE_URL));
+	                break;
+	            case "playing":
+	            	richard.getPresence().setGame(Game.playing(message.substring(gameTitleIndex)));
+	                break;
+	            default:
+	            	richard.getPresence().setGame(Game.playing(message.substring(gameTitleIndex)));
+	        }
 		}
 	}
 	
