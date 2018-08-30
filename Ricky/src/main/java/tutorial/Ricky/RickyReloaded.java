@@ -39,6 +39,13 @@ import net.dv8tion.jda.core.managers.GuildController;
 
 public class RickyReloaded extends ListenerAdapter {
 	
+<<<<<<< HEAD
+	/**
+	 * Wes = 321798967669030912L
+	 * Jared = 270258726236192769L
+	 */
+=======
+>>>>>>> 5400575aec9cb2fa0fba2dab44086195044456b1
 	private static final long WES_SNOWFLAKE = 321798967669030912L;
 	private static final long JARED_SNOWFLAKE = 270258726236192769L;
 	private static final long[] ADVANCED_COMMANDS_AUTH = {WES_SNOWFLAKE, JARED_SNOWFLAKE};

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="GameBot/src/main/java"/>
+	<classpathentry kind="src" path="GameBot/src/test/java"/>
+	<classpathentry kind="src" path="Ricky/src/main/java"/>
+	<classpathentry kind="src" path="Ricky/src/test/java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="GameBot/target/classes"/>
+</classpath>
