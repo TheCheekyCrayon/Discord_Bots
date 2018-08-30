@@ -209,7 +209,7 @@ public class RickyReloaded extends ListenerAdapter {
 		} else if(advanced_auth(objUser.getIdLong()) && strArgs[0].equals("set_game")) {
 			int gameTitleIndex = message.indexOf(" ", message.indexOf(" ") + 1);
 			
-	        switch(strArgs[1])
+	        switch(strArgs[1].toLowerCase())
 	        {
 	            case "watching":
 	            	richard.getPresence().setGame(Game.watching(message.substring(gameTitleIndex)));
@@ -223,6 +223,112 @@ public class RickyReloaded extends ListenerAdapter {
 	            default:
 	            	richard.getPresence().setGame(Game.playing(message.substring(gameTitleIndex)));
 	        }
+		}
+	}
+	
+	private void handleCommandv2(String message, MessageChannel objChannel, User objUser, Guild objGuild, JDA richard) {
+		String[] strArgs = message.substring(1).split(" ");
+		boolean advancedAuth = advanced_auth(objUser.getIdLong());
+		boolean isHelpChannel = objChannel.getName().equalsIgnoreCase("help");
+
+		switch (strArgs[0].toLowerCase()) {
+		case "quote":
+			int randomIndex = RickyReloaded.rand.nextInt(RickyReloaded.quotes.length);
+			objChannel.sendMessage(RickyReloaded.quotes[randomIndex] + " " + objUser.getAsMention()).queue();
+			break;
+		case "subscribe":
+			objChannel.sendMessage(SUBSCRIBE_URL + " " + objUser.getAsMention() + " Now like and subscribe!").queue();
+			break;
+		case "say": // advanced
+			if (advancedAuth) {
+				TextChannel chan = richard.getTextChannelsByName("general_discussion", true).get(0);
+				chan.sendMessage(message.substring(message.indexOf(" "))).queue();
+			}
+			break;
+		case "commands":
+			String msg = "In the #help channel:\n\n";
+			msg += "$DJ    (for the DJ role, @DJ )\n";
+			msg += "$NSFW    (for the NSFW role, @NSFW )\n";
+			msg += "$Meme-ber    (for the Meme-ber role, @Meme-ber )\n";
+			msg += "$Media   (for the Media role, @Media )\n";
+			msg += "$Games    (for the Games role, @Games )\n";
+			msg += "$Member    (to get Member status in the server, @Member )\n\n";
+			msg += "In any channel $subscibe will generate a link that allows you to subscribe to the Cookingwith Rick YouTube channel\n";
+			msg += "$quote will grab a random quote that Rick has said himself\n\n";
+			objChannel.sendMessage(msg).queue();
+			break;
+		case "DJ":
+			if (isHelpChannel)
+				setRole("DJ", objGuild, objUser, objChannel);
+			break;
+		case "Meme-ber":
+			if (isHelpChannel)
+				setRole("Meme-ber", objGuild, objUser, objChannel);
+			break;
+		case "NSFW":
+			if (isHelpChannel)
+				setRole("NSFW", objGuild, objUser, objChannel);
+			break;
+		case "Media":
+			if (isHelpChannel)
+				setRole("Media", objGuild, objUser, objChannel);
+			break;
+		case "Games":
+			if (isHelpChannel)
+				setRole("Games", objGuild, objUser, objChannel);
+			break;
+		case "Member":
+			if (isHelpChannel)
+				setRole("Member", objGuild, objUser, objChannel);
+			break;
+		case "list_quotes": // advanced
+			if (advancedAuth) {
+				String msg1 = "Listing " + RickyReloaded.quotes.length + " quotes:\n";
+				for (int i = 0; i < RickyReloaded.quotes.length; i++) {
+					msg1 += RickyReloaded.quotes[i] + "\n";
+					if(i%10 == 0) {
+						objChannel.sendMessage(msg1).queue();
+						msg1 = "";
+					} else if(i+1 == RickyReloaded.quotes.length) {
+						objChannel.sendMessage(msg1).queue();
+					}
+				}
+			}
+			break;
+		case "reload_quotes": // wes only
+			if(objUser.getIdLong() == WES_SNOWFLAKE) {
+				try {
+					objChannel.sendMessage("Attempting to reload quotes from " + RickyReloaded.quotes_path).queue();
+					load_quotes_from_file();
+					objChannel.sendMessage("Succesfully loaded " + RickyReloaded.quotes.length + " quotes.").queue();
+				} catch (IOException e) {
+					e.printStackTrace();
+					objChannel.sendMessage("Ah shit, something's fucked...").queue();
+				}
+			}
+			break;
+		case "set_game": // advanced
+			if (advancedAuth) {
+				int gameTitleIndex = message.indexOf(" ", message.indexOf(" ") + 1);
+				
+		        switch(strArgs[1])
+		        {
+		            case "watching":
+		            	richard.getPresence().setGame(Game.watching(message.substring(gameTitleIndex)));
+		                break;
+		            case "streaming":
+		            	richard.getPresence().setGame(Game.streaming(message.substring(gameTitleIndex), SUBSCRIBE_URL));
+		                break;
+		            case "playing":
+		            	richard.getPresence().setGame(Game.playing(message.substring(gameTitleIndex)));
+		                break;
+		            default:
+		            	richard.getPresence().setGame(Game.playing(message.substring(gameTitleIndex)));
+		        }
+			}
+			break;
+		default:
+			return;
 		}
 	}
 	
