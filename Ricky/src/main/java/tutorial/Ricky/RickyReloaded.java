@@ -1,14 +1,17 @@
 package tutorial.Ricky;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -32,9 +35,11 @@ import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
+import net.dv8tion.jda.core.managers.AudioManager;
 import net.dv8tion.jda.core.managers.GuildController;
 
 public class RickyReloaded extends ListenerAdapter {
@@ -107,7 +112,9 @@ public class RickyReloaded extends ListenerAdapter {
         };
         
         // schedule the task to run starting now and then every 30 min...
-        timer.schedule (rickyVideoFeedUpdate, 0l, 1000*60*30);
+        // We know this works so we're not going to run this during testing.
+        if(!RickyReloaded.test_mode)
+        	timer.schedule (rickyVideoFeedUpdate, 0l, 1000*60*30);
 	}
 	
     @Override
@@ -129,7 +136,7 @@ public class RickyReloaded extends ListenerAdapter {
     	
     	//If the message begins with the command symbol pass it to the handleCommand function and return
     	if(message.charAt(0) == COMMAND_SYMBOL) {
-    		handleCommand(message, objChannel, objUser, objGuild, ricardo);
+    		handleCommand(message, objChannel, objUser, objGuild, ricardo, e);
     		return;
     	}
     	
@@ -142,7 +149,7 @@ public class RickyReloaded extends ListenerAdapter {
     	}
     }
 	
-	private void handleCommand(String message, MessageChannel objChannel, User objUser, Guild objGuild, JDA richard) {
+	private void handleCommand(String message, MessageChannel objChannel, User objUser, Guild objGuild, JDA richard, MessageReceivedEvent event) {
 		String[] strArgs = message.substring(1).split(" ");
 		boolean advancedAuth = advanced_auth(objUser.getIdLong());
 		boolean isHelpChannel = objChannel.getName().equalsIgnoreCase("help");
@@ -223,9 +230,24 @@ public class RickyReloaded extends ListenerAdapter {
 				}
 			}
 			break;
+		case "add_quote":
+			if (advancedAuth) {
+				int quoteBegin = message.indexOf(" ");
+				objChannel.sendMessage("Attempting to add \"" + message.substring(quoteBegin) + "\" to " + RickyReloaded.quotes_path).queue();
+				addQuote(RickyReloaded.quotes_path, message.substring(quoteBegin));
+				try {
+					objChannel.sendMessage("Attempting to reload quotes from " + RickyReloaded.quotes_path).queue();
+					load_quotes_from_file();
+					objChannel.sendMessage("Succesfully loaded " + RickyReloaded.quotes.length + " quotes.").queue();
+				} catch (IOException e) {
+					e.printStackTrace();
+					objChannel.sendMessage("Ah shit, something's fucked...").queue();
+				}
+			}
+			break;
 		case "set_game": // advanced
 			if (advancedAuth) {
-				int gameTitleIndex = message.indexOf(" ", message.indexOf(" ") + 1);
+				int gameTitleIndex = message.indexOf(" ");
 				
 		        switch(strArgs[1])
 		        {
@@ -242,6 +264,30 @@ public class RickyReloaded extends ListenerAdapter {
 		            	richard.getPresence().setGame(Game.playing(message.substring(gameTitleIndex)));
 		        }
 			}
+			break;
+		case "join":
+			VoiceChannel connectedChannel = event.getMember().getVoiceState().getChannel();
+			if(connectedChannel == null) {
+                // Don't forget to .queue()!
+				objChannel.sendMessage("Join a voice channel first retard...").queue();
+                return;
+            } else {
+            	AudioManager audioManager = event.getGuild().getAudioManager();
+            	if(audioManager.isAttemptingToConnect()) {
+            		objChannel.sendMessage("Take it easy sister; I'm already trying to connect to the voice channel...").queue();
+                    return;
+                }
+            	// Connects to the channel.
+                audioManager.openAudioConnection(connectedChannel);
+                
+            }
+			break;
+		case "part":
+			VoiceChannel connectedChannel2 = event.getGuild().getSelfMember().getVoiceState().getChannel();
+			if(connectedChannel2 == null)
+                return;
+            // Disconnect from the channel.
+            event.getGuild().getAudioManager().closeAudioConnection();
 			break;
 		default:
 			return;
@@ -357,5 +403,17 @@ public class RickyReloaded extends ListenerAdapter {
     			return true;
     	}
     	return false;
+    }
+    
+    private static void addQuote(String path, String quote) {
+    	try { 
+    		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path, true)));
+    		out.println(quote);
+    		out.flush();
+    		out.close();
+    	}
+    	catch (IOException e) {  
+    		System.out.println(e);
+    	}
     }
 }
