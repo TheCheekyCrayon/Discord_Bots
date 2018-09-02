@@ -39,13 +39,11 @@ import net.dv8tion.jda.core.managers.GuildController;
 
 public class RickyReloaded extends ListenerAdapter {
 	
-<<<<<<< HEAD
+
 	/**
 	 * Wes = 321798967669030912L
 	 * Jared = 270258726236192769L
 	 */
-=======
->>>>>>> 5400575aec9cb2fa0fba2dab44086195044456b1
 	private static final long WES_SNOWFLAKE = 321798967669030912L;
 	private static final long JARED_SNOWFLAKE = 270258726236192769L;
 	private static final long[] ADVANCED_COMMANDS_AUTH = {WES_SNOWFLAKE, JARED_SNOWFLAKE};
@@ -57,10 +55,12 @@ public class RickyReloaded extends ListenerAdapter {
     private static List<String> seen;	//Contains list of seen video URLs; videos in this list will not be sent to channel
     private static Random rand;			
     private static String quotes_path;	//File system path to text file containing quotes to load; this is loaded from the properties file
+    private static boolean test_mode;
 
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args) throws IOException, ClassNotFoundException, LoginException, IllegalArgumentException, InterruptedException, RateLimitedException {
 		Properties bot_conf = loadConfig(args[0]);
+		RickyReloaded.test_mode = bot_conf.getProperty("testing").equalsIgnoreCase("true");
 		RickyReloaded.quotes_path = bot_conf.getProperty("quotes");
 		RickyReloaded.rand = new Random();
     	
@@ -80,7 +80,10 @@ public class RickyReloaded extends ListenerAdapter {
 		//Create Discord bot object; this estavlishes connection to discord server etc..
    		final JDA rickyBot = new JDABuilder(AccountType.BOT).setToken(bot_conf.getProperty("ricky")).buildBlocking();
         rickyBot.addEventListener(new RickyReloaded());
-        rickyBot.getPresence().setGame(Game.playing("in the Kitchen"));
+        if(RickyReloaded.test_mode)
+        	rickyBot.getPresence().setGame(Game.watching("dev testing"));
+        else
+        	rickyBot.getPresence().setGame(Game.playing("in the Kitchen"));
         
         //Set up task to check Ricky's yt channel for new videos
         Timer timer = new Timer ();
@@ -138,102 +141,8 @@ public class RickyReloaded extends ListenerAdapter {
     		}
     	}
     }
-    
-	private void handleCommand(String message, MessageChannel objChannel, User objUser, Guild objGuild, JDA richard) {
-		String[] strArgs = message.substring(1).split(" ");
-		
-		//Pick a random quote and send to channel; mentions command issuer
-		if(strArgs[0].equalsIgnoreCase("quote")){
-			Random rand = new Random();
-			int randomIndex = rand.nextInt(RickyReloaded.quotes.length);
-			objChannel.sendMessage(RickyReloaded.quotes[randomIndex] + " " + objUser.getAsMention()).queue();
-		
-		//Send link to subscribe to Ricky's channel; mentions command issuer
-		} else if(strArgs[0].equals("subscribe")){	// pastes the link to subscribe in the chat
-			objChannel.sendMessage("https://www.youtube.com/channel/UCkOlmd_lMI9YHRcN1ffKbyQ?sub_confirmation=1 " + objUser.getAsMention() + " Now like and subscribe!").queue();
-			
-		//Makes Ricky say things in general_discussion; Can be spammy, limited to advanced auth users
-		} else if(advanced_auth(objUser.getIdLong()) && strArgs[0].equalsIgnoreCase("say")) {
-			TextChannel chan = richard.getTextChannelsByName("general_discussion", true).get(0);
-			chan.sendMessage(message.substring(message.indexOf(" "))).queue();
-			
-		//Lists available commands in chat
-		} else if(strArgs[0].equalsIgnoreCase("commands")) {	// sends messages of the commands the bot uses
-			String msg = "In the #help channel:\n\n";
-			msg += "$DJ    (for the DJ role, @DJ )\n";
-			msg += "$NSFW    (for the NSFW role, @NSFW )\n";
-			msg += "$Meme-ber    (for the Meme-ber role, @Meme-ber )\n";
-			msg += "$Media   (for the Media role, @Media )\n";
-			msg += "$Games    (for the Games role, @Games )\n";
-			msg += "$Member    (to get Member status in the server, @Member )\n\n";
-			msg += "In any channel $subscibe will generate a link that allows you to subscribe to the Cookingwith Rick YouTube channel\n";
-			msg += "$quote will grab a random quote that Rick has said himself\n\n";			
-			objChannel.sendMessage(msg).queue();
-			
-		} else if(strArgs[0].equals("DJ") && objChannel.getName().equalsIgnoreCase("help")) {
-			setRole("DJ", objGuild, objUser, objChannel);
-			
-		} else if(strArgs[0].equals("Meme-ber") && objChannel.getName().equalsIgnoreCase("help")) {
-			setRole("Meme-ber", objGuild, objUser, objChannel);
-			
-		} else if(strArgs[0].equals("NSFW") && objChannel.getName().equalsIgnoreCase("help")) {
-			setRole("NSFW", objGuild, objUser, objChannel);
-			
-		} else if(strArgs[0].equals("Media") && objChannel.getName().equalsIgnoreCase("help")) {
-			setRole("Media", objGuild, objUser, objChannel);
-			
-		} else if(strArgs[0].equals("Games") && objChannel.getName().equalsIgnoreCase("help")) {
-			setRole("Games", objGuild, objUser, objChannel);
-			
-		} else if(strArgs[0].equals("Member") && objChannel.getName().equalsIgnoreCase("help")) {
-			setRole("Member", objGuild, objUser, objChannel);
-		
-		//This command is pretty spammy so it's limited to users listed in the advanced auth list at the top of the program
-		//This code will combine 10 quotes per message separated by a newline so we don't get rate limited
-		} else if(advanced_auth(objUser.getIdLong()) && strArgs[0].equals("list_quotes")) {
-			String msg = "Listing " + RickyReloaded.quotes.length + " quotes:\n";
-			for (int i = 0; i < RickyReloaded.quotes.length; i++) {
-				msg += RickyReloaded.quotes[i] + "\n";
-				if(i%10 == 0) {
-					objChannel.sendMessage(msg).queue();
-					msg = "";
-				} else if(i+1 == RickyReloaded.quotes.length) {
-					objChannel.sendMessage(msg).queue();
-				}
-			}
-			
-		//This command is limited to just Wes since no one else has access to the quotes file anyway
-		//Also it causes disk activity on server
-		} else if(objUser.getIdLong() == WES_SNOWFLAKE && strArgs[0].equals("reload_quotes")) {
-			try {
-				objChannel.sendMessage("Attempting to reload quotes from " + RickyReloaded.quotes_path).queue();
-				load_quotes_from_file();
-				objChannel.sendMessage("Succesfully loaded " + RickyReloaded.quotes.length + " quotes.").queue();
-			} catch (IOException e) {
-				e.printStackTrace();
-				objChannel.sendMessage("Ah shit, something's fucked...").queue();
-			}
-		} else if(advanced_auth(objUser.getIdLong()) && strArgs[0].equals("set_game")) {
-			int gameTitleIndex = message.indexOf(" ", message.indexOf(" ") + 1);
-			
-	        switch(strArgs[1].toLowerCase())
-	        {
-	            case "watching":
-	            	richard.getPresence().setGame(Game.watching(message.substring(gameTitleIndex)));
-	                break;
-	            case "streaming":
-	            	richard.getPresence().setGame(Game.streaming(message.substring(gameTitleIndex), SUBSCRIBE_URL));
-	                break;
-	            case "playing":
-	            	richard.getPresence().setGame(Game.playing(message.substring(gameTitleIndex)));
-	                break;
-	            default:
-	            	richard.getPresence().setGame(Game.playing(message.substring(gameTitleIndex)));
-	        }
-		}
-	}
 	
-	private void handleCommandv2(String message, MessageChannel objChannel, User objUser, Guild objGuild, JDA richard) {
+	private void handleCommand(String message, MessageChannel objChannel, User objUser, Guild objGuild, JDA richard) {
 		String[] strArgs = message.substring(1).split(" ");
 		boolean advancedAuth = advanced_auth(objUser.getIdLong());
 		boolean isHelpChannel = objChannel.getName().equalsIgnoreCase("help");
@@ -264,27 +173,27 @@ public class RickyReloaded extends ListenerAdapter {
 			msg += "$quote will grab a random quote that Rick has said himself\n\n";
 			objChannel.sendMessage(msg).queue();
 			break;
-		case "DJ":
+		case "dj":
 			if (isHelpChannel)
 				setRole("DJ", objGuild, objUser, objChannel);
 			break;
-		case "Meme-ber":
+		case "meme-ber":
 			if (isHelpChannel)
 				setRole("Meme-ber", objGuild, objUser, objChannel);
 			break;
-		case "NSFW":
+		case "nsfw":
 			if (isHelpChannel)
 				setRole("NSFW", objGuild, objUser, objChannel);
 			break;
-		case "Media":
+		case "media":
 			if (isHelpChannel)
 				setRole("Media", objGuild, objUser, objChannel);
 			break;
-		case "Games":
+		case "games":
 			if (isHelpChannel)
 				setRole("Games", objGuild, objUser, objChannel);
 			break;
-		case "Member":
+		case "member":
 			if (isHelpChannel)
 				setRole("Member", objGuild, objUser, objChannel);
 			break;
